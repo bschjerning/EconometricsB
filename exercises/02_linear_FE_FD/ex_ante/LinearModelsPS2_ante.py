@@ -25,16 +25,17 @@ def estimate(
         dict: A dictionary with the results from the ols-estimation.
     """
     
-    b_hat = None # Fill in
-    resid = None # Fill in
-    u_hat = None # Fill in
-    SSR = None # Fill in
-    SST = None # Fill in
-    R2 = None # Fill in
+    b_hat =  # Fill in
+    resid =  # Fill in
+    u_hat =  # Fill in
+    SSR =    # Fill in
+    SST =    # Fill in
+    R2 =     # Fill in
 
     sigma, cov, se = variance(transform, SSR, x, n, t)
-    t_values =  None # Fill in
+    t_values = # Fill in
     
+        
     names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov']
     results = [b_hat, se, sigma, t_values, R2, cov]
     return dict(zip(names, results))
@@ -50,7 +51,7 @@ def est_ols( y: np.ndarray, x: np.ndarray) -> np.ndarray:
     Returns:
         np.array: Estimated beta hats.
     """
-    return   # Fill in
+    return # Fill in
 
 def variance( 
         transform: str, 
@@ -76,17 +77,23 @@ def variance(
     Returns:
         tuple: [description]
     """
+    
+    k = x.shape[1]
+    if not n:
+        n = x.shape[0]
+    
     if not transform:
           sigma = None # Fill in
-    elif transform.lower() == 'fe':
+    elif transform.lower() in ('fe','fd'):
           sigma = None # Fill in
     elif transform.lower() in ('be', 're'):
           sigma = None # Fill in
     else:
         raise Exception('Invalid transform provided.')
     
-    cov =  None # Fill in
-    se =  None # Fill in
+    cov =  # Fill in
+    se =   # Fill in
+    
     return sigma, cov, se
 
 

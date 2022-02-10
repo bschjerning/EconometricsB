@@ -25,15 +25,15 @@ def estimate(
         dict: A dictionary with the results from the ols-estimation.
     """
     
-    b_hat =  # Fill in
-    resid =  # Fill in
-    u_hat =  # Fill in
-    SSR =    # Fill in
-    SST =    # Fill in
-    R2 =     # Fill in
+    b_hat =  None# Fill in
+    resid =  None# Fill in
+    u_hat =  None# Fill in
+    SSR =    None# Fill in
+    SST =    None# Fill in
+    R2 =     None# Fill in
 
     sigma, cov, se = variance(transform, SSR, x, n, t)
-    t_values = # Fill in
+    t_values = None# Fill in
     
         
     names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov']
@@ -91,8 +91,8 @@ def variance(
     else:
         raise Exception('Invalid transform provided.')
     
-    cov =  # Fill in
-    se =   # Fill in
+    cov =  None# Fill in
+    se =   None# Fill in
     
     return sigma, cov, se
 

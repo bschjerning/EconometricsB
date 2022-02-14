@@ -88,8 +88,12 @@ def est_piv( y: np.array, x: np.array, z: np.array) -> np.array:
     Returns:
         np.array: Estimated beta coefficients.
     """
+    # FILL IN: Estimate betahat and return it (Page 362 in Wooldrigde )
+        
+    # 1st stage 
 
-    # FILL IN: Estimate betahat and return it 
+    # 2nd stage
+    
     betahat = np.array([0., 0.]) # <-- replace with PIV estimate 
     return betahat 
 
@@ -155,7 +159,17 @@ def robust( x: np.array, residual: np.array, t:int) -> tuple:
     
     # Else we loop over each individual.
     else:
-        None # FILL IN 
+        NT,K = None 
+        N = None 
+        B = np.zeros((K, K)) # initialize 
+
+        for i in range(N):
+            idx_i = None # index values for individual i. Hint: Use python's slice function
+            Omega = None # (T,T) matrix of outer product of i's residuals 
+            B += None # (K,K) contribution 
+
+        Ainv = None
+        cov = None
     
     se = np.sqrt(np.diag(cov)).reshape(-1, 1)
     return cov, se

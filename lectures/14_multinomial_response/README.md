@@ -1,7 +1,7 @@
 ## Multinomial response models - Conditional Logit and Multinomial Logit  
-The notebook [multinomial_response.ipynb](https://github.com/bschjerning/metrics2021/blob/main/14_multinomial_response/multinomial_response.ipynb) presents Conditional Logit and Multinomial Logit models based on chapter 16 in Wooldridge's (2010) and also draws upon Chapter 3 on Logit in Kenneth Trains textbook "Discrete Choice Models with simulation"
+The notebook [multinomial_response.ipynb](https://github.com/bschjerning/EconometricsB/blob/main/lectures/14_multinomial_response/multinomial_response.ipynb) presents Conditional Logit and Multinomial Logit models based on chapter 16 in Wooldridge's (2010) and also draws upon Chapter 3 on Logit in Kenneth Trains textbook "Discrete Choice Models with simulation"
 
-The notebook [clogit_simulations.ipynb](https://github.com/bschjerning/metrics2021/blob/main/14_multinomial_response/clogit_simulations.ipynb) and associated python code for simulation and estimation of Conditional Logit. The notebook illustrates the properties of MLE and substitution patters of Logit though simulation of data and estimation parameters, derivatives and elasticities. The MLE for logit is analyzed briefly though a simple Monte Carlo experiment. 
+The notebook [clogit_simulations.ipynb](https://github.com/bschjerning/EconometricsB/blob/main/lectures/14_multinomial_response/clogit_simulations.ipynb) and associated python code for simulation and estimation of Conditional Logit. The notebook illustrates the properties of MLE and substitution patters of Logit though simulation of data and estimation parameters, derivatives and elasticities. The MLE for logit is analyzed briefly though a simple Monte Carlo experiment. 
 
 The material presented in 5 videotaped lectures available on YouTube
 

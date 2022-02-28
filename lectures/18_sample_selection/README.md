@@ -1,5 +1,5 @@
 ## Sample selection in regression models
-The notebook [sample_selectionn.ipynb](https://github.com/bschjerning/metrics2021/blob/main/18_sample%20selection/sample_selectionn.ipynb) gives an introduction to sample selection in regression models based on chapter 19 in Wooldridge (2010). 
+The notebook [sample_selectionn.ipynb](https://github.com/bschjerning/EconometricsB/blob/main/lectures/18_sample_selection/sample_selectionn.ipynb) gives an introduction to sample selection in regression models based on chapter 19 in Wooldridge (2010). 
 
 We first consider sample selection in regression models such as
 

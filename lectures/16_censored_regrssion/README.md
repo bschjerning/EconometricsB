@@ -1,5 +1,5 @@
 ## Models for censored regression and corner solution outcomes - The Tobit model
-The notebook [tobit.ipynb](https://github.com/bschjerning/metrics2021/blob/main/16_censored_regrssion/tobit.ipynb) gives an introduction to models for censored regression and corner solution outcomes Tobit model based on chapter 18 in Wooldridge's (2010). The involved identification, estimation and specification issues are initially illustrated though simulations of the Tobit model in it's simplest form where errors are assumed to be homoscedastic and independent normally distributed. In video 4, we study how robuts Tobbit is to violations to the assumptions. 
+The notebook [tobit.ipynb](https://github.com/bschjerning/EconometricsB/blob/main/lectures/16_censored_regrssion/tobit.ipynb) gives an introduction to models for censored regression and corner solution outcomes Tobit model based on chapter 18 in Wooldridge's (2010). The involved identification, estimation and specification issues are initially illustrated though simulations of the Tobit model in it's simplest form where errors are assumed to be homoscedastic and independent normally distributed. In video 4, we study how robuts Tobbit is to violations to the assumptions. 
 
 The material presented in 4 videotaped lectures available on YouTube
 

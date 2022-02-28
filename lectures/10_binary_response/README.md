@@ -1,5 +1,5 @@
 ## Introduction to binary response models. 
-The notebook [binary_choice.ipynb](https://github.com/bschjerning/metrics2021/blob/main/10_binary_response/binary_choice.ipynb) gives an introduction to binary response models based on sections 15.1-15.4 in Wooldridge's (2010). 
+The notebook [binary_choice.ipynb](https://github.com/bschjerning/EconometricsB/blob/main/lectures/10_binary_response/binary_choice.ipynb) gives an introduction to binary response models based on sections 15.1-15.4 in Wooldridge's (2010). 
 
 The material presented in 5 videotaped lectures available on YouTube
 

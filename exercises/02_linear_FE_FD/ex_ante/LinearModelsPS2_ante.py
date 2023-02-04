@@ -5,7 +5,7 @@ from tabulate import tabulate
 
 
 def estimate( 
-        y: np.ndarray, x: np.ndarray, transform='', n=None, t=None
+        y: np.ndarray, x: np.ndarray, transform='', N=None, T=None
     ) -> dict:
     """Takes some np.arrays and estimates regular OLS, FE or FD.
     
@@ -16,26 +16,24 @@ def estimate(
         variable, then it needs to have the shape (n*t, 1).
         transform (str, optional): Specify if estimating fe or fd, in order 
         to get correct variance estimation. Defaults to ''.
-        n (int, optional): Number of observations. If panel, then the 
+        N (int, optional): Number of observations. If panel, then the 
         number of individuals. Defaults to None.
-        t (int, optional): If panel, then the number of periods an 
+        T (int, optional): If panel, then the number of periods an 
         individual is observerd. Defaults to None.
 
     Returns:
         dict: A dictionary with the results from the ols-estimation.
     """
     
-    b_hat =  None# Fill in
-    resid =  None# Fill in
-    u_hat =  None# Fill in
-    SSR =    None# Fill in
-    SST =    None# Fill in
-    R2 =     None# Fill in
+    b_hat = None # Fill in
+    resid = None # Fill in
+    SSR = None # Fill in
+    SST = None # Fill in
+    R2 = None # Fill in
 
-    sigma, cov, se = variance(transform, SSR, x, n, t)
-    t_values = None# Fill in
+    sigma, cov, se = variance(transform, SSR, x, N, T)
+    t_values =  None # Fill in
     
-        
     names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov']
     results = [b_hat, se, sigma, t_values, R2, cov]
     return dict(zip(names, results))
@@ -51,14 +49,14 @@ def est_ols( y: np.ndarray, x: np.ndarray) -> np.ndarray:
     Returns:
         np.array: Estimated beta hats.
     """
-    return # Fill in
+    return   # Fill in
 
 def variance( 
         transform: str, 
         SSR: float, 
         x: np.ndarray, 
-        n: int,
-        t: int
+        N: int,
+        T: int
     ) -> tuple :
     """Use SSR and x array to calculate different variation of the variance.
 
@@ -66,9 +64,9 @@ def variance(
         transform (str): Specifiec if the data is transformed in any way.
         SSR (float): SSR
         x (np.ndarray): Array of independent variables.
-        n (int, optional): Number of observations. If panel, then the 
+        N (int, optional): Number of observations. If panel, then the 
         number of individuals. Defaults to None.
-        t (int, optional): If panel, then the number of periods an 
+        T (int, optional): If panel, then the number of periods an 
         individual is observerd. Defaults to None.
 
     Raises:
@@ -77,23 +75,21 @@ def variance(
     Returns:
         tuple: [description]
     """
-    
-    k = x.shape[1]
-    if not n:
-        n = x.shape[0]
-    
-    if not transform:
+
+    K=x.shape[1]
+
+
+    if transform in ('', 're' 'fd'):
           sigma = None # Fill in
-    elif transform.lower() in ('fe','fd'):
+    elif transform.lower() == 'fe':
           sigma = None # Fill in
-    elif transform.lower() in ('be', 're'):
+    elif transform.lower() in ('be'): 
           sigma = None # Fill in
     else:
         raise Exception('Invalid transform provided.')
     
-    cov =  None# Fill in
-    se =   None# Fill in
-    
+    cov =  None # Fill in
+    se =  None # Fill in
     return sigma, cov, se
 
 

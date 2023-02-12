@@ -38,12 +38,12 @@ def variance(
     if not N:
         N = x.shape[0]
     
-    if not transform:
+    if transform in ('', 're' 'fd'):
+            sigma = SSR/(N*T - k)
+    elif transform.lower() == ('fe'):
+            sigma = SSR/(N*T -N- k)
+    elif transform.lower() in ('be'):
         sigma = SSR/(N - k)
-    elif transform.lower() in ('fe', 'fd'):
-        sigma = SSR/(N * (T - 1) - k)
-    elif transform.lower() in ('be','re'):
-        sigma = SSR/(T * (N - k))
     else:
         raise Exception('Invalid transform provided.')
     

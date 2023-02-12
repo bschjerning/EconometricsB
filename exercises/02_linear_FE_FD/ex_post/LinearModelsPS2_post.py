@@ -5,7 +5,7 @@ from tabulate import tabulate
 
 
 def estimate( 
-        y: np.ndarray, x: np.ndarray, transform='', n=None, t=None
+        y: np.ndarray, x: np.ndarray, transform='', N=None, T=None
     ) -> list:
     
     b_hat = est_ols(y, x)
@@ -15,7 +15,7 @@ def estimate(
     SST = (y - np.mean(y)).T@(y - np.mean(y))
     R2 = 1 - SSR/SST
 
-    sigma, cov, se = variance(transform, SSR, x, n, t)
+    sigma, cov, se = variance(transform, SSR, x, N, T)
     t_values = b_hat/se
     
     names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov']
@@ -30,20 +30,20 @@ def variance(
         transform: str, 
         SSR: float, 
         x: np.ndarray, 
-        n: int,
-        t: int
+        N: int,
+        T: int
     ) -> tuple :
     
     k = x.shape[1]
-    if not n:
-        n = x.shape[0]
+    if not N:
+        N = x.shape[0]
     
     if not transform:
-        sigma = SSR/(n - k)
+        sigma = SSR/(N - k)
     elif transform.lower() in ('fe', 'fd'):
-        sigma = SSR/(n * (t - 1) - k)
+        sigma = SSR/(N * (T - 1) - k)
     elif transform.lower() in ('be','re'):
-        sigma = SSR/(t * (n - k))
+        sigma = SSR/(T * (N - k))
     else:
         raise Exception('Invalid transform provided.')
     
@@ -81,7 +81,7 @@ def print_table(
     print(f"\u03C3\u00b2 = {results.get('sigma').item():.3f}")
     
     
-def perm( Q_T: np.ndarray, A: np.ndarray, t=0) -> np.ndarray:
+def perm( Q_T: np.ndarray, A: np.ndarray, T=0) -> np.ndarray:
     """Takes a transformation matrix and performs the transformation on 
     the given vector or matrix.
 
@@ -95,15 +95,15 @@ def perm( Q_T: np.ndarray, A: np.ndarray, t=0) -> np.ndarray:
     Returns:
         np.array: Returns the transformed vector or matrix.
     """
-    # We can infer t from the shape of the transformation matrix.
-    if t==0:
-        t = Q_T.shape[1]
+    # We can infer T from the shape of the transformation matrix.
+    if T==0:
+        T = Q_T.shape[1]
 
     # Initialize the numpy array
     Z = np.array([[]])
     Z = Z.reshape(0, A.shape[1])
 
     # Loop over the individuals, and permutate their values.
-    for i in range(int(A.shape[0]/t)):
-        Z = np.vstack((Z, Q_T@A[i*t: (i + 1)*t]))
+    for i in range(int(A.shape[0]/T)):
+        Z = np.vstack((Z, Q_T@A[i*T: (i + 1)*T]))
     return Z

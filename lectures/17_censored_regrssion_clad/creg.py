@@ -119,7 +119,7 @@ def Q_tobit(theta, y, x, out='Q'): # sample objective function and derivatives f
     Phi_i=norm.cdf(x@beta/sigma)
     Phi_i=np.minimum(np.maximum(Phi_i,1e-15),1-1e-15) 
     ll_i = 1*(y == 0)*np.log(1-Phi_i)  -  1*(y > 0)*((y-x@beta)**2/(2*sigma**2) + np.log(sigma**2)/2)
-    if out=='Q': return -np.mean(ll_i)
+    if out=='Q': return -np.mean(ll_i, axis=0)
 
     s_i=s_i_tobit(beta, sigma, y, x, Phi_i) # computes NxK array with scores 
     if out=='s_i': return s_i  # Return s_i
@@ -130,7 +130,6 @@ def s_i_tobit(beta, sigma, y, x, Phi_i):
     phi_i=norm.pdf(x@beta/sigma)
     phi_i=np.minimum(np.maximum(phi_i,1e-15),1-1e-15) 
     s_i_beta= 1/sigma**2*((y > 0)*(y-x@beta) - 1*(y == 0)*sigma*phi_i/(1-Phi_i))*x 
-    s_i_sigma =  1*(y == 0)/(1-Phi_i)*phi_i*x@beta/(sigma**2) 
     s_i_sigma =  1*(y == 0)*phi_i/(1-Phi_i)*x@beta/(sigma**2) 
     s_i_sigma += 1*(y > 0)*((y-x@beta)**2/(sigma**3) -1/(sigma))
     s_i=np.append(s_i_beta, s_i_sigma.reshape(-1,1),  axis=1)

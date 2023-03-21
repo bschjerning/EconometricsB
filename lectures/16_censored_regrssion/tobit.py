@@ -25,8 +25,10 @@ def sim_error(N, x, error_type='normal'):
         u=np.exp(random.normal(0, 1, size=(N,1)));    
     elif error_type=='uniform': 
         u=random.random(size=(N,1)); 
-    elif error_type=='het': 
-        u=(0.2*x[:,1]**2)*random.normal(0, 1, size=(N,1))
+    elif error_type=='het':
+        # u=random.normal(0, 1, size=(N,1))
+        # u=random.normal(0, 1, size=(N,1))
+        u=(0.2*x[:,1]*x[:,1]).reshape(-1,1)*random.normal(0, 1, size=(N,1))        
     elif error_type=='mix_sym': 
         # Parameter for mixture of two normals  
         p=0.5                       # Mixing parameter    

@@ -3,6 +3,7 @@ from numpy import linalg as la
 import pandas as pd 
 from scipy import optimize
 from tabulate import tabulate
+import time
 
 def estimate(
         q: object, 
@@ -40,7 +41,7 @@ def estimate(
     Q = lambda theta: np.mean(q(theta, y, x))
 
     # call optimizer
-    result = None # FILL IN: use "optimize.minimize" on the anonymous function Q
+    result = None # FILL IN: use "optimize.minimize" on the anonymous function Q, remember **kwargs
     
     # compute standard errors 
     cov, se = variance(q, y, x, result, cov_type)   
@@ -88,22 +89,23 @@ def variance(
 
     # "B" matrix (outer product of the scores)
     B = (s.T@s)/N
+
+    if cov_type in ['Hessian', 'Sandwich']: 
+        H = hessian(f_q, thetahat)/N
+        H_inv = la.inv(H)  
     
     # cov: P*P covariance matrix of theta 
     if cov_type == 'Hessian':
-        A_inv = result.hess_inv
+        A_inv = H_inv # NB used to be result.hess_inv
         cov = None # FILL IN 
     elif cov_type == 'Outer Product':
         cov = None # FILL IN 
     elif cov_type == 'Sandwich':
-        A_inv = result.hess_inv
+        A_inv = H_inv # NB used to be result.hess_inv
         cov = None # FILL IN 
 
     # se: P-vector of std.errs. 
-    if cov == None: 
-        pass # this allows the file to be called before we have computed "cov" above :) 
-    else: 
-        se = None # FILL IN: formula that uses the matrix cov 
+    se = None # FILL IN: formula that uses the matrix cov 
 
     return cov, se
 
@@ -185,3 +187,88 @@ def print_table(
     print(f'Optimizer {opt_outcome} after {results["nit"]} iter. ({results["nfev"]} func. evals.). Final criterion: {results["fun"]: 8.4g}.')
     print(title)
     return tab 
+
+def hessian( fhandle , x0 , h=1e-5 ) -> np.ndarray: 
+    '''hessian(): computes the (K,K) matrix of 2nd partial derivatives
+        using the aggregation "sum" (i.e. consider dividing by N)
+
+    Args: 
+        fhandle: callable function handle, returning an (N,) vector or scalar
+            (i.e. you can q(theta) or Q(theta).)
+        x0: K-array of parameters at which to evaluate the derivative 
+
+    Returns: 
+        hess: (K,K) matrix of second partial derivatives 
+    
+    Example: 
+        from scipy.optimize import rosen, rosen_der, rosen_hess
+        > x0 = np.array([-1., -4.])
+        > rosen_hess(x0) - estimation.hessian(rosen, x0)
+        The default step size of h=1e-5 gives the closest value 
+        to the true Hessian for the Rosenbrock function at [-1, -4]. 
+    '''
+
+    # Computes the hessian of the input function at the point x0 
+    assert x0.ndim == 1 , f'x0 must be 1-dimensional'
+    assert callable(fhandle), 'fhandle must be a callable function handle'
+
+    # aggregate rows with a raw sum (as opposed to the mean)
+    agg_fun = np.sum
+
+    # Initialization
+    K = x0.size
+    f2 = np.zeros((K,K)) # double step
+    f1 = np.zeros((K,))  # single step
+    h_rel = h # optimal step size is smaller than for gradient
+                
+    # Step size 
+    dh = np.empty((K,))
+    for k in range(K): 
+        if x0[k] == 0.0: # use absolute step when relative is impossible 
+            dh[k] = h_rel 
+        else: # use a relative step 
+            dh[k] = h_rel*x0[k]
+
+    # Initial point 
+    time0 = time.time()
+    f0 = agg_fun(fhandle(x0)) 
+    time1 = time.time()
+
+    # expected time until calculations are done 
+    sec_per_eval = time1-time0 
+    evals = K + K*(K+1)//2 
+    tot_time_secs = sec_per_eval * evals 
+    if tot_time_secs > 5.0: # if we are slow, provide an ETA for the user 
+        print(f'Computing numerical Hessian, expect approx. {tot_time_secs:5.2f} seconds (for {evals} criterion evaluations)')
+
+    # Evaluate single forward steps
+    for k in range(K): 
+        x1 = np.copy(x0) 
+        x1[k] = x0[k] + dh[k] 
+        f1[k] = agg_fun(fhandle(x1))
+
+    # Double forward steps
+    for k in range(K): 
+        for j in range(k+1): # only loop to the diagonal!! This is imposing symmetry to save computations
+            
+            # 1. find the new point (after double-stepping) 
+            x2 = np.copy(x0) 
+            if k==j: # diagonal steps: only k'th entry is changed, taking two steps 
+                x2[k] = x0[k] + dh[k] + dh[k] 
+            else:  # we have taken both a step in the k'th and one in the j'th directions 
+                x2[k] = x0[k] + dh[k] 
+                x2[j] = x0[j] + dh[j]  
+
+            # 2. compute function value 
+            f2[k,j] = agg_fun(fhandle(x2))
+            
+            # 3. fill out above the diagonal ()
+            if j < k: # impose symmetry  
+                f2[j,k] = f2[k,j]
+
+    hess = np.empty((K,K))
+    for k in range(K): 
+        for j in range(K): 
+            hess[k,j] = ((f2[k,j] - f1[k]) - (f1[j] - f0)) / (dh[k] * dh[j])
+
+    return hess 

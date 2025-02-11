@@ -4,7 +4,7 @@ from tabulate import tabulate
 
 
 def estimate( 
-        y: np.ndarray, x: np.ndarray, transform='', t:int=None
+        y: np.ndarray, x: np.ndarray, transform='', T:int=None,robust_se=False
     ) -> list:
     """Uses the provided estimator (mostly OLS for now, and therefore we do 
     not need to provide the estimator) to perform a regression of y on x, 
@@ -39,7 +39,9 @@ def estimate(
     SST = (y - np.mean(y)).T@(y - np.mean(y))  # Total sum of squares
     R2 = 1 - SSR/SST
 
-    sigma2, cov, se = variance(transform, SSR, x, t)
+    sigma2, cov, se = variance(transform, SSR, x, T)
+    if robust_se:
+        cov, se = robust(x, residual, T)
     t_values = b_hat/se
     
     names = ['b_hat', 'se', 'sigma2', 't_values', 'R2', 'cov']
@@ -63,7 +65,7 @@ def variance(
         transform: str, 
         SSR: float, 
         x: np.ndarray, 
-        t: int
+        T: int
     ) -> tuple:
     """Calculates the covariance and standard errors from the OLS
     estimation.
@@ -94,15 +96,15 @@ def variance(
     if transform in ('', 'fd', 'be'):
         n = x.shape[0]
     else:
-        n = x.shape[0]/t
+        n = x.shape[0]/T
 
     # Calculate sigma2
     if transform in ('', 'fd', 'be'):
         sigma2 = (np.array(SSR/(n - k)))
     elif transform.lower() == 'fe':
-        sigma2 = np.array(SSR/(n * (t - 1) - k))
+        sigma2 = np.array(SSR/(n * (T - 1) - k))
     elif transform.lower() == 're':
-        sigma2 = np.array(SSR/(t * n - k))
+        sigma2 = np.array(SSR/(T * n - k))
     else:
         raise Exception('Invalid transform provided.')
     
@@ -228,3 +230,33 @@ def load_example_data():
         'Union'
     ]
     return y, x, t, year, label_y, label_x
+
+def robust( x: np.array, residual: np.array, T:int) -> tuple:
+    '''Calculates the robust variance estimator 
+
+    ARGS: 
+        t: number of time periods 
+    '''
+    # If only cross sectional, we can easily use the diagonal.
+    if not T:
+        Ainv = la.inv(x.T@x)
+        uhat2 = residual ** 2
+        uhat2_x = uhat2 * x # elementwise multiplication: avoids forming the diagonal matrix (RAM intensive!)
+        cov = Ainv @ (x.T@uhat2_x) @ Ainv
+    
+    # Else we loop over each individual.
+    else:
+        NT,K = None 
+        N = None 
+        B = np.zeros((K, K)) # initialize 
+
+        for i in range(N):
+            idx_i = None # index values for individual i. Hint: Use python's slice function
+            Omega = None # (T,T) matrix of outer product of i's residuals 
+            B += None # (K,K) contribution 
+
+        Ainv = None
+        cov = None
+    
+    se = np.sqrt(np.diag(cov)).reshape(-1, 1)
+    return cov, se

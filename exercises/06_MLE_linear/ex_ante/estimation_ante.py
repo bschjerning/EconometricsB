@@ -107,6 +107,13 @@ def variance(
     # se: P-vector of std.errs. 
     se = None # FILL IN: formula that uses the matrix cov 
 
+    # check that there are no negative eigenvalues in the variance matrix (since should always be positive semi-definite i.e. have only nonnegative entries as cannot have a negative variance term)
+    eigvals,_ = la.eig(cov)
+    assert ((eigvals<0).any() == False) 
+    # if you get negative eigenvalues might be worth checking whether your B matrix (or H matrix, depending on whether you use sandwich, outer product or sandwhich) is invertible or suffers from collinearity issues 
+    # (you can check this by looking at the eigenvalues of the B and A matrices - if close to zero numerically these are not well conditioned to inverting)
+
+
     return cov, se
 
 

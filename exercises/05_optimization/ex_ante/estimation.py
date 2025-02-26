@@ -16,37 +16,6 @@ def forward_diff(func, x0, h=1.49e-08):
     grad = (func(x1) - func(x0))/step
     return grad
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # This is for vector difference, not in use.
 def forward_diff_vec(func, x0, h=1.49e-08):
     f0 = func(x0)

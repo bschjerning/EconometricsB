@@ -69,9 +69,8 @@ def pooled(df, yvar, xvar, groupvar, model='probit', cov_type='sandwich',theta0=
     print('Pooled', model)
     Nobs, k, n, T, y, x = panel_setup(df, yvar, xvar, groupvar)
     Qfun     = lambda beta, out:  Q_pooled(y, x, T, beta, model, out)
-    if np.isscalar(theta0): 
-        theta0=np.zeros((k+1,1)) 
-    res=M.estimation(Qfun, theta0=np.zeros((k,1)), deriv=deriv, cov_type=cov_type, parnames=xvar)
+    if np.isscalar(theta0): theta0=np.zeros(k) 
+    res=M.estimation(Qfun, theta0=theta0, deriv=deriv, cov_type=cov_type, parnames=xvar)
     xb, Gx, gx = Qfun(res.theta_hat, out='predict')
     APE=np.mean(gx)*res.theta_hat
     res.update(dict(zip(['yvar', 'xvar', 'Nobs','k', 'n', 'T', 'APE'], [yvar, xvar, Nobs, k, n, T, APE])))
@@ -83,7 +82,7 @@ def rand_effect(df, yvar, xvar, groupvar, model='probit', cov_type='Ainv', theta
     Nobs, k, n, T, y, x = panel_setup(df, yvar, xvar, groupvar)
     Qfun     = lambda beta, out:  Q_RE(y, x, T, beta, model, out)
     if np.isscalar(theta0): 
-        theta0=np.zeros((k+1,1)) 
+        theta0=np.zeros(k+1) 
         theta0[-1]=1
     res=M.estimation(Qfun, theta0, deriv=deriv, cov_type=cov_type, parnames=xvar+['sigma_a'])
     res.sigma_a=res.theta_hat[-1]

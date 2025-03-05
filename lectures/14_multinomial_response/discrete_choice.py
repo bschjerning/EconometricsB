@@ -6,64 +6,103 @@ from numpy import linalg as la
 from numpy import random
 from scipy.stats import genextreme
 
-def sim_data(N, J, theta) -> tuple:
-    k = theta.size
+import numpy as np
+from scipy.stats import genextreme
+
+def sim_data(N, J, theta):
+    """
+    Simulate data for a Conditional Logit model.
+
+    Parameters:
+    - N: Number of individuals
+    - J: Number of alternatives
+    - theta: True parameter values (K, 1)
+
+    Returns:
+    - Dictionary with choices (y) and covariates (x)
+    """
+
+    k = theta.size  # Number of covariates
     
-    x = random.normal(size=(N, J, k)) + np.linspace(3,5,J).reshape(1,J, 1)
+    # Generate covariates with increasing means across alternatives
+    x = np.random.normal(size=(N, J, k)) + np.linspace(3, 5, J).reshape(1, J, 1)
+    
+    # Compute deterministic utility
     v = utility(theta, x)
-    e = genextreme.ppf(random.uniform(size=(N, J)), c=0)
-    u = v + e # utility
     
-    # Find which choice that maximizes utility.
+    # Add extreme value Type I errors (logit-distributed shocks)
+    e = genextreme.ppf(np.random.uniform(size=(N, J)), c=0)
+    u = v + e  # Total utility
+    
+    # Choose alternative that maximizes utility
     y = u.argmax(axis=1)
     
-    label = ['y', 'x']
-    d=dict(zip(label, [y, x]))
-    return d
+    return {'y': y, 'x': x}
 
-def clogit(y, x, cov_type='Ainv',theta0=None, deriv=0, quiet=False): 
-	# Objective function and derivatives for 
-    N, J, K, palt, xalt, xvars = labels(x)
-    Qfun     = lambda theta, out:  Q_clogit(theta, y, x, out)
+def clogit(y, x, cov_type='Ainv', theta0=None, deriv=1, quiet=False,  xvars=None): 
+    """
+    Estimates a Conditional Logit model using M-estimation.
+    
+    Parameters:
+    - y: (N,) vector of observed choices (0, 1, ..., J-1)
+    - x: (N, J, K) covariate matrix (varying across alternatives)
+    - cov_type: Type of variance estimation ('Ainv', 'Binv', 'sandwich')
+    - theta0: Initial parameter guess (default: zeros)
+    - deriv: Order of derivative (0 for none, 1 for first-order)
+    - quiet: Suppress output if True
+    
+    Returns:
+    - res: Dictionary with estimates, standard errors, and diagnostics
+    """
+    N, J, K, _, _, xvars = labels(x, xvars)  # Extract dimensions and variable names
+    
+    Qfun = lambda theta, out: Q_clogit(theta, y, x, out)  # Define sample objective function
+    theta0 = np.zeros(K) if theta0 is None else theta0  # Default start values
+    res = M.estimation(Qfun, theta0, deriv, cov_type, parnames=xvars)  # Estimate via MLE
+    res.update({'yvar': 'y', 'xvars': xvars, 'N': N, 'K': K, 'J': J})  # Store model details
 
-    if theta0 is None: 
-    	theta0=np.zeros((K,1)) 
-
-    res=M.estimation(Qfun, theta0, deriv, cov_type, parnames=xvars)
-    # v, p, dv = Qfun(res.theta_hat, out='predict')
-    res.update(dict(zip(['yvar', 'xvars', 'N','K', 'n'], ['y', xvars, N, K, N])))
-
-    if quiet==False:    
-        print('Conditional logit')
-        print('Initial log-likelihood', -Qfun(theta0, 'Q'))
-        print('Initial gradient\n', -Qfun(theta0, 'dQ'))
+    if not quiet:    
+        print('Conditional Logit Estimation')
+        print('Initial log-likelihood:', -Qfun(theta0, 'Q'))
+        print('Initial gradient:\n', -Qfun(theta0, 'dQ'))
         print_output(res)
 
     return res
 
 def Q_clogit(theta, y, x, out='Q'):
-    v = utility(theta, x) 	# Deterministic component of utility
-    ll_i=logccp(v, y)
-    q_i= - ll_i   
-    if out=='Q':
-    	return np.mean(q_i)
-    dv=x
-    p=ccp(v)
-    if out=='predict':  return v, p, dv         # Return predicted values
-    N, J, K = dv.shape
-    idx=y[:,] + J*np.arange(0, N)
-    dvj=dv.reshape(N*J, K)[idx,:] 	# pick choice specific values corresponding to y 
-
-    s_i=dvj -  np.sum(p.reshape(N,J,1)*dv, axis=1)
-    g=-np.mean(s_i, axis=0)
+    """
+    Sample log-likelihood and its derivatives for Conditional Logit.
     
-    if out=='s_i': return s_i                     # Return s_i: NxK array with scores
-    if out=='dQ':  return g;  # Return dQ: array of size K derivative of sample objective function
+    Parameters:
+    - theta: (K, 1) parameter vector
+    - y: (N,) observed choices
+    - x: (N, J, K) covariates (varying across alternatives)
+    - out: 'Q' for negative log-likelihood, 's_i' for individual scores, 'dQ' for gradient of Q.
+
+    Returns:
+    - Negative mean log-likelihood (if out='Q')
+    - Individual score contributions (if out='s_i')
+    - Gradient (if out='dQ')
+    """
+    
+    N, J, K = x.shape
+    v = utility(theta, x)  # Compute deterministic utility v_ij = x_ij * beta
+    ll_i = logccp(v, y)   # Compute log-likelihood contribution
+
+    if out == 'Q': 
+        return -np.mean(ll_i)  # Sample objective function (negative mean log-likelihood)
+
+    # Compute (s_i) or gradient (dQ)
+    p = ccp(v)  # Compute choice probabilities p_ij
+    x_iy = x.reshape(N * J, K)[y + J * np.arange(N), :]  # Extract covariates for chosen alternative
+    s_i = x_iy - np.sum(p.reshape(N, J, 1) * x, axis=1)  # Score function: residual of x_iy - E[x|choice]
+
+    return s_i if out == 's_i' else -np.mean(s_i, axis=0)  # Return individual scores or gradient (dQ)
 
 def utility(theta, x):
-	N, J, K=x.shape
-	u = x @ theta
-	return u.reshape(N,J) 
+    N, J, K = x.shape       # N: Individuals, J: Alternatives, K: Covariates
+    u = x @ theta           # Compute deterministic utility v_ij = x_ij * beta
+    return u.reshape(N, J)  # Reshape to match (N, J) structure
 
 def logsum(v, sigma=1): 
 	# Expected max over iid extreme value shocks with scale parameter sigma
@@ -81,36 +120,80 @@ def logccp(v, y=None, sigma=1):
     	N, J=v.shape
     	idx=y[:,] + J*np.arange(0, N)
     	v=v.reshape(N*J, 1)[idx] 	# pick choice specific values corresponding to y 
-    return (v - ev)/sigma
+    return v/sigma - ev
 
 def ccp(v, y=None, sigma=1):
     # Conditional choice probabilities
     return np.exp(logccp(v, y, sigma))
 
-def labels(x):
-	# labels and dimensions for plotting
-	N, J, K = x.shape
-	palt=['p' + str(i)  for i in range(J)]; 
-	xalt=['alt' + str(i)  for i in range(J)]; 
-	xvars=['var' + str(i)  for i in range(K)]; 
-	return N, J, K, palt, xalt, xvars
+def labels(x, xvars=None, alternatives=None):
+    """
+    Extract dimensions and generate labels for alternatives and variables.
 
-def APE_var(theta, x, m=0, quiet=False):
-	# matrix of partial derivatives with respect of a change in attribute m
-    N, J, K, palt, xalt, xvars = labels(x)
-    p=ccp(utility(theta, x))
-    E=np.empty((J,J))
-    for j in range(J):
-        for k in range(J):
-            E[k, j]=np.mean(p[:,j]*theta[m]*(1*(j==k)-p[:,k]), axis=0)
-    if not quiet: 
-        print('\nAPE wrt change in', xvars[m])
-        print(tabulate(np.c_[xalt, E], headers=palt,floatfmt="10.5f"))
+    Parameters:
+    - x: (N, J, K) covariate matrix
+    - xvars: List of variable names (default: 'var0', 'var1', ...)
+    - alternatives: List of alternative names (default: 'alt0', 'alt1', ...)
+
+    Returns:
+    - N: Number of individuals
+    - J: Number of alternatives
+    - K: Number of covariates
+    - palt: List of probability labels ('p0', 'p1', ...)
+    - xalt: List of alternative labels ('alt0', 'alt1', ...)
+    - xvars: List of covariate names ('var0', 'var1', ...)
+    """
+
+    N, J, K = x.shape
+
+    if xvars is None:
+        xvars = ['var' + str(i) for i in range(K)]
+
+    if alternatives is None:
+        palt = ['p' + str(i) for i in range(J)]
+        xalt = ['alt' + str(i) for i in range(J)]
+    else:
+        palt = ["p_" + str(alt) for alt in alternatives]
+        xalt = ["x_" + str(alt) for alt in alternatives]
+
+    return N, J, K, palt, xalt, xvars
+
+def APE_var(theta, x, m=0, xvars=None, alternatives=None, quiet=False):
+    """
+    Compute Average Partial Effects (APE) for a change in attribute m.
+
+    Parameters:
+    - theta: (K, 1) estimated coefficients
+    - x: (N, J, K) attribute matrix (varying across alternatives)
+    - m: index of the attribute for which APE is computed
+    - quiet: if False, prints the APE results
+
+    Returns:
+    - E: (J, J) matrix of average partial effects where:
+        - Rows (k) correspond to the alternative whose attribute x_{ik} is changed.
+        - Columns (j) correspond to the alternative whose probability p_{ij} is affected.
+        - Each entry E[k, j] represents the effect of a change in x_{ik} on the probability p_{ij}.
+    """
+    
+    N, J, K, palt, xalt, xvars = labels(x, xvars, alternatives) # Extract dimensions and labels
+    
+    # Compute APE: Expected marginal effects of x_{ik} on p_{ij}
+    p = ccp(utility(theta, x))  # Compute choice probabilities p_ij
+    E = np.empty((J, J)) # Initialize APE matrix     
+    for j in range(J):  # Loop over alternatives (j)
+        for k in range(J):  # Loop over alternatives (k)
+            E[k, j] = np.mean(p[:, j] * theta[m] * (1 * (j == k) - p[:, k]), axis=0)
+
+    # Print APE results if quiet=False
+    if not quiet:  
+        print(f"\nAPE: Average change in {palt}\n    - w.r.t. change in {xalt} \n    - for attribute m={m} ({xvars[m]}) with coefficient θ_{m}={theta[m].round(4)}")
+        print(tabulate(np.c_[xalt, E], headers=palt, floatfmt="10.5f"))
+
     return E
 
-def Ematrix_var(theta, x, m=0, quiet=False):
+def Ematrix_var(theta, x, m=0, xvars=None, alternatives=None, quiet=False):
 	# matrix of elasticities with respect ot a change in attribute m
-	N, J, K, palt, xalt, xvars = labels(x)
+	N, J, K, palt, xalt, xvars = labels(x, xvars, alternatives)
 	p=ccp(utility(theta, x))
 	E=np.empty((J,J))
 	for j in range(J):
@@ -121,10 +204,10 @@ def Ematrix_var(theta, x, m=0, quiet=False):
 	    print(tabulate(np.c_[xalt, E], headers=palt,floatfmt="10.5f"))
 	return E
 
-def Ematrix_own(theta, x, quiet=False):
+def Ematrix_own(theta, x, xvars=None, alternatives=None, quiet=False):
     # Own elasticity: % change in prob of alternative j wrt % change in attribute of same alternative j
     # done for for each variable in x  
-    N, J, K, palt, xalt, xvars = labels(x)
+    N, J, K, palt, xalt, xvars = labels(x, xvars, alternatives)
     p=ccp(utility(theta, x))
     E_own=np.empty((J, K))
     for iJ in range(J):
@@ -135,10 +218,10 @@ def Ematrix_own(theta, x, quiet=False):
         print(tabulate(np.c_[xalt, E_own], headers=xvars,floatfmt="10.5f"))
     return E_own
 
-def Ematrix_cross(theta, x, quiet=False):
+def Ematrix_cross(theta, x, xvars=None, alternatives=None, quiet=False):
     # Cross elasticity:  % change in prob of alternative j wrt % change in attribute of other alternative k ne j
     # done for each variable in x  
-    N, J, K, palt, xalt, xvars = labels(x)
+    N, J, K, palt, xalt, xvars = labels(x, xvars, alternatives)
     p=ccp(utility(theta, x))
     E_cross=np.empty((J, K))
     for iJ in range(J):
@@ -151,13 +234,14 @@ def Ematrix_cross(theta, x, quiet=False):
 def print_output(res, cols=['parnames','theta_hat', 'se', 't-values', 'jac']): 
     print('Dep. var. :', res['yvar'], '\n') 
 
-    table=({k:res[k] for k in cols})
-    print(tabulate(table, headers="keys",floatfmt="10.5f"))
-    # print('\n# of groups:      :', res['n'])
+    # Print columns that exist in res
+    valid_cols = [k for k in cols if k in res]
+    table = {k: res[k] for k in valid_cols}    
+    print(tabulate(table, headers="keys", floatfmt="10.5f"))
+
     print('# of observations :', res['N'])
-    print('# log-likelihood. :', - res['Q']*res['n'], '\n')
+    print('# log-likelihood. :', - res['Q']*res['N'], '\n')
     print ('Iteration info: %d iterations, %d evaluations of objective, and %d evaluations of gradients' 
         % (res.nit,res.nfev, res.njev))
     print(f"Elapsed time: {res['time']:0.4f} seconds")
     print('')
-

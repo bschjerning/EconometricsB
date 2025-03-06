@@ -20,10 +20,10 @@ def estimation(Qfun, theta0, deriv=0, cov_type ='sandwich', parnames='', output=
     hess = None
     if deriv>1: # use user-supplied 2 order derivatives
         hess  =  lambda theta:  Qfun(theta, out='H')
-        res=minimize(fun=Q, jac=dQ, hess=hess, x0=theta0, method='trust-ncg')
+        res=minimize(fun=Q, jac=dQ, hess=hess, x0=theta0.flatten(), method='trust-ncg')
         res.hess_inv=la.inv(res.hess)
     else: # use bfgs
-        res=minimize(fun=Q, jac=dQ, x0=theta0, method='bfgs')
+        res=minimize(fun=Q, jac=dQ, x0=theta0.flatten(), method='bfgs')
     
     theta_hat=np.array(res.x).reshape(-1,1)
     

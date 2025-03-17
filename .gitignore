@@ -1,2 +1,6 @@
 */.ipynb_checkpoints
 */__pycache__
+*.pyc
+lectures/15_blp/slides_source/*
+lectures/14_multinomial_response/z_not_shared/*
+lectures/15_blp/z_not_shared/*

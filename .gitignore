@@ -9,3 +9,14 @@ lectures/15_blp/z_not_shared/*
 .ipynb_checkpoints/
 **/.ipynb_checkpoints/
 .gitignore
+*.lyx
+*.lyx~
+*.aux
+*.bbl
+*.blg
+*.brf
+*.fls
+*.fdb_latexmk
+*.log
+*.out
+*.tex

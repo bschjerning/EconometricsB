@@ -3,7 +3,7 @@ This lecture summarizes some of the properties of the ordinary least squares (OL
 
 **Slides**: [1_linear_cross_section.pdf](1_linear_cross_section.pdf)
 
-**Code** [Code](/lectures/01_ols_intro/code/1_linear_cross_section.ipynb)
+**Code** [code/1_linear_cross_section.ipynb](/lectures/01_ols_intro/code/1_linear_cross_section.ipynb)
 
 **Readings:** Wooldridge (2010) Chapter 4: Sections 4.1--4.2.3.
 

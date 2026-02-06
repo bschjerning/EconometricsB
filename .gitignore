@@ -20,3 +20,5 @@ lectures/15_blp/z_not_shared/*
 *.log
 *.out
 *.tex
+lectures/03_lpd_re_hausman/z_not_shared/code/binary_choice_panel.ipynb
+**/z_not_shared/**

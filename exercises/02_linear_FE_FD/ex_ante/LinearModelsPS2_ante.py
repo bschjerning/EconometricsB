@@ -80,7 +80,7 @@ def variance(
     K=x.shape[1]
 
 
-    if transform in ('', 're' 'fd'):
+    if transform in ('', 're', 'fd'):
           sigma = SSR/(N*T - K) # Fill in
     elif transform.lower() == 'fe':
           sigma = SSR/(N*(T-1) - K) # Fill in

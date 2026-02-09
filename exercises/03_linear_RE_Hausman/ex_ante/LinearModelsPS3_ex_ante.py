@@ -231,32 +231,29 @@ def load_example_data():
     ]
     return y, x, t, year, label_y, label_x
 
-def robust( x: np.array, residual: np.array, T:int) -> tuple:
-    '''Calculates the robust variance estimator 
+def robust(x: np.array, residual: np.array, T: int) -> tuple:
+    '''Calculates the robust variance estimator (clustered by individual when T is given).'''
 
-    ARGS: 
-        t: number of time periods 
-    '''
-    # If only cross sectional, we can easily use the diagonal.
+    # Cross-section robust (White)
     if not T:
-        Ainv = la.inv(x.T@x)
+        Ainv = la.inv(x.T @ x)
         uhat2 = residual ** 2
-        uhat2_x = uhat2 * x # elementwise multiplication: avoids forming the diagonal matrix (RAM intensive!)
-        cov = Ainv @ (x.T@uhat2_x) @ Ainv
-    
-    # Else we loop over each individual.
+        uhat2_x = uhat2 * x
+        cov = Ainv @ (x.T @ uhat2_x) @ Ainv
+
+    # Panel robust (Arellano / cluster by i)
     else:
-        NT,K = None 
-        N = None 
-        B = np.zeros((K, K)) # initialize 
+        NT, K = x.shape
+        N = NT // T
 
+        B = np.zeros((K, K))
         for i in range(N):
-            idx_i = None # index values for individual i. Hint: Use python's slice function
-            Omega = None # (T,T) matrix of outer product of i's residuals 
-            B += None # (K,K) contribution 
+            idx_i = slice(i*T, (i+1)*T)                  # rows for individual i
+            Omega = residual[idx_i] @ residual[idx_i].T  # (T,T) = u_i u_i'
+            B += x[idx_i].T @ Omega @ x[idx_i]           # X_i' u_i u_i' X_i
 
-        Ainv = None
-        cov = None
-    
+        Ainv = la.inv(x.T @ x)
+        cov = Ainv @ B @ Ainv
+
     se = np.sqrt(np.diag(cov)).reshape(-1, 1)
     return cov, se

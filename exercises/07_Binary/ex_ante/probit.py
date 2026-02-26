@@ -9,12 +9,13 @@ name = 'Probit'
 DOCHECKS = True 
 
 def G(z): 
-    # Fill in
-    return None 
+    '''cdf of the standard normal distribution, taking arguments in (-inf;inf) and returning numbers in (0;1)
+    '''
+    return norm.cdf(z)
 
 def q(theta, y, x): 
-    # Fill in 
-    return None
+    # Returnér negative log-likelihood bidrag pr observation (N,)
+    return -loglikelihood(theta, y, x)
 
 def loglikelihood(theta, y, x):
 
@@ -27,24 +28,24 @@ def loglikelihood(theta, y, x):
         assert y.shape[0] == N
         assert theta.ndim == 1 
         assert theta.size == K 
-
-    Gxb = None # Fill in 
+    # Φ(x'θ)
+    Gxb = G(x@theta) 
     
     # we cannot take the log of 0.0
     Gxb = np.fmax(Gxb, 1e-8)    # truncate below at 0.00000001 
     Gxb = np.fmin(Gxb, 1.-1e-8) # truncate above at 0.99999999
 
-    ll = None # Fill in 
+    ll = y*np.log(Gxb) + (1.0-y)*np.log(1.0-Gxb)
     return ll
 
 
-def starting_values(y,x): 
-    # Fill in 
-    return None 
+def starting_values(y, x):
+    b_ols = np.linalg.solve(x.T @ x, x.T @ y)
+    return (2.5 * b_ols).reshape(-1,)
 
 def predict(theta, x): 
     # the "prediction" is just Pr(y=1|x)
-    yhat = None # Fill in  
+    yhat = G(x@theta) 
     return yhat 
 
 def Ginv(p): 

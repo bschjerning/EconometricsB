@@ -32,7 +32,7 @@ def loglikelihood(theta: np.ndarray, y: np.ndarray, x: np.ndarray) -> np.array:
     y = y.reshape(-1, 1)
 
     residual = y - x @ beta
-    ll = None # FILL IN loglikelihood vector (should be an N-vector)
+    ll = - 0.5 * np.log(sigma2) - 0.5 * (residual**2/sigma2) # loglikelihood vector (should be an N-vector)
     return ll
 
 def starting_values(y, x):

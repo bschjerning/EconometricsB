@@ -25,14 +25,14 @@ def estimate(
         dict: A dictionary with the results from the ols-estimation.
     """
     
-    b_hat = None # Fill in
-    resid = None # Fill in
-    SSR = None # Fill in
-    SST = None # Fill in
-    R2 = None # Fill in
+    b_hat = est_ols(y, x)
+    resid = y - x@b_hat
+    SSR = resid.T@resid
+    SST = ((y - y.mean()).T@(y - y.mean()))[0][0]
+    R2 = 1 - SSR/SST
 
     sigma, cov, se = variance(transform, SSR, x, N, T)
-    t_values =  None # Fill in
+    t_values =  b_hat.flatten()/se.flatten()
     
     names = ['b_hat', 'se', 'sigma', 't_values', 'R2', 'cov']
     results = [b_hat, se, sigma, t_values, R2, cov]
@@ -49,7 +49,8 @@ def est_ols( y: np.ndarray, x: np.ndarray) -> np.ndarray:
     Returns:
         np.array: Estimated beta hats.
     """
-    return   # Fill in
+    b_hat = la.inv(x.T@x)@x.T@y
+    return b_hat
 
 def variance( 
         transform: str, 
@@ -79,17 +80,17 @@ def variance(
     K=x.shape[1]
 
 
-    if transform in ('', 're' 'fd'):
-          sigma = None # Fill in
+    if transform in ('', 're', 'fd'):
+          sigma = SSR/(N*T - K) # Fill in
     elif transform.lower() == 'fe':
-          sigma = None # Fill in
+          sigma = SSR/(N*(T-1) - K) # Fill in
     elif transform.lower() in ('be'): 
-          sigma = None # Fill in
+          sigma = SSR/(N*(T-2) - K) # Fill in
     else:
         raise Exception('Invalid transform provided.')
     
-    cov =  None # Fill in
-    se =  None # Fill in
+    cov =  la.inv(x.T@x)*sigma # Fill in
+    se =  np.sqrt(np.diag(cov)).reshape(-1, 1) # Fill in
     return sigma, cov, se
 
 

@@ -41,7 +41,7 @@ def estimate(
     Q = lambda theta: np.mean(q(theta, y, x))
 
     # call optimizer
-    result = None # FILL IN: use "optimize.minimize" on the anonymous function Q, remember **kwargs
+    result = optimize.minimize(Q, theta0, options=options, **kwargs)
     
     # compute standard errors 
     cov, se = variance(q, y, x, result, cov_type)   
@@ -97,15 +97,15 @@ def variance(
     # cov: P*P covariance matrix of theta 
     if cov_type == 'Hessian':
         A_inv = H_inv # NB used to be result.hess_inv
-        cov = None # FILL IN 
+        cov = H_inv/N
     elif cov_type == 'Outer Product':
-        cov = None # FILL IN 
+        cov = la.inv(B)/N
     elif cov_type == 'Sandwich':
         A_inv = H_inv # NB used to be result.hess_inv
-        cov = None # FILL IN 
+        cov = H_inv @ B @ H_inv/N
 
     # se: P-vector of std.errs. 
-    se = None # FILL IN: formula that uses the matrix cov 
+    se = np.sqrt(np.diag(cov)) 
 
     # check that there are no negative eigenvalues in the variance matrix (since should always be positive semi-definite i.e. have only nonnegative entries as cannot have a negative variance term)
     eigvals,_ = la.eig(cov)

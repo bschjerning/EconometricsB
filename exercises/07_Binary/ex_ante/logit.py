@@ -8,12 +8,12 @@ name = 'Logit'
 DOCHECKS = True 
 
 def G(z): 
-    # Fill in 
-    return None
+    return np.exp(z) / (1.0 + np.exp(z))
 
 def q(theta, y, x): 
-    # Fill in 
-    return None
+    # Returnér negative log-likelihood bidrag pr observation (N,)
+    return -loglikelihood(theta, y, x)
+
 
 def loglikelihood(theta, y, x):
 
@@ -28,24 +28,24 @@ def loglikelihood(theta, y, x):
         assert theta.size == K 
 
     # Fill in 
-    Gxb = None
+    Gxb = G(x@theta)
     
     # 2. avoid log(0.0) errors
     Gxb = np.fmax(Gxb, 1e-8)     # truncate below at 0.00000001
     Gxb = np.fmin(Gxb, 1.0-1e-8) # truncate above at 0.99999999
 
     # Fill in 
-    ll = None 
+    ll = y*np.log(Gxb) + (1.0-y)*np.log(1.0-Gxb) 
 
     return ll
 
 def starting_values(y,x): 
     # Fill in 
-    return None
+    return (4.0 * np.linalg.solve(x.T @ x, x.T @ y)).reshape(-1,)
 
 def predict(theta, x): 
     # the "prediction" is the response probability, Pr(y=1|x)
-    yhat = None # Fill in 
+    yhat = G(x@theta) # Fill in 
     return yhat 
 
 def Ginv(u): 

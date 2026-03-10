@@ -1,0 +1,29 @@
+variable,label,description
+person_id,Person ID,Person identifier
+rownum,Row num,Row number in the dataset
+binary_choice,Binary choice,"Dummy, =1 if this row is the car that was chosen"
+price_to_inc,Price/ln(income),"Purchase price in thousands of dollars, divided by the natural log of household income in thousands"
+range,Range,Hundreds of miles that the vehicle can travel between refuelings/rechargings
+acceleration,Acceleration,"Seconds required to reach 30 mph from stop, in tens of seconds (e.g., 3 s is entered as 0.3)"
+top_speed,Top speed,"Highest speed that the vehicle can attain, in hundreds of miles/h (e.g., 80 mph is entered as 0.80)"
+pollution,Pollution,Tailpipe emissions as fraction of comparable new gas vehicle
+size,Size,"0""mini, 0.1""subcompact, 0.2""compact, 0.3""mid-size or large"
+big_enough,Big enough,1 if household size is over 2 and vehicle size is 3; 0 otherwise
+luggage_space,Luggage space,Luggage space as fraction of comparable new gas vehicle
+operating_cost,Operating cost,"Cost per mile of travel, in tens of cents per mile (e.g., 5 cents/mile is entered as 0.5.). For electric vehicles, cost is for home recharging. For other vehicles, cost is for station refueling"
+station_availability,Station availability,Fraction of stations that have capability to refuel/recharge the vehicle
+suv,Sports utility vehicle,"1 for sports utility vehicle, zero otherwise"
+sports_car,Sports car,"1 for sports car, zero otherwise"
+station_wagon,Station wagon,"1 for station wagon, zero otherwise"
+truck,Truck,"1 for truck, zero otherwise"
+van,Van,"1 for van, zero otherwise"
+ev,Constant for EV,"1 for electric vehicle, zero otherwise"
+commute_x_ev,Commute*EV,1 if respondent commutes less than five miles each day and vehicle is electric; zero otherwise
+college_x_ev,College*EV,1 if respondent had some college education and vehicle is electric; zero otherwise
+cng,Constant for CNG,"1 for compressed natural gas vehicle, zero otherwise"
+methanol,Constant for methanol,"1 for methanol vehicle, zero otherwise"
+college_x_methanol,College*methanol,1 if respondent had some college education and vehicle is methanol; zero otherwise
+not_ev,Non-EV,"Dummy, =1 if car is not EV"
+not_cng,Non-CNG,"Dummy, =1 if car is not CNG"
+j,Car number,"Index for the car number (0,1,...,5)"
+y,Chosen car,"Index for the chosen car (0,1,...,5)"

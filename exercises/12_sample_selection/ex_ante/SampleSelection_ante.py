@@ -8,8 +8,8 @@ def q(beta,y,x):
     return - loglik_probit(beta,y,x)
 
 def loglik_probit(beta, y, x):
-    z = None # Fill in 
-    G = None # Fill in  : remember Probit uses a normal distribution
+    z = x @ beta
+    G = norm.cdf(z)
 
     # Make sure that no values are below 0 or above 1.
     h = np.sqrt(np.finfo(float).eps)
@@ -19,7 +19,7 @@ def loglik_probit(beta, y, x):
     G = G.reshape(-1, )
     y = y.reshape(-1, )
 
-    ll = None # Fill In
+    ll = y * np.log(G) + (1 - y) * np.log(1 - G)
     return ll
 
 def starting_values(y,x):

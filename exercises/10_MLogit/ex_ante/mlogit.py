@@ -21,7 +21,8 @@ def loglike(theta, y, x):
     N, K = x.shape
 
     # FILL IN 
-    ll = None # loglikelihood: (N,) vector
+    ccp, logccp = choice_prob(theta, x)
+    ll = logccp[np.arange(y.size), y] # loglikelihood: (N,) vector
     return ll
 
 
@@ -35,11 +36,12 @@ def util(theta, x):
     # FILL IN 
     # 1. compute v (observable utilities, matrix product)
     # 2. add column of zeros (for normalized alternative)
-    v = None 
+    v = x @ beta # (N,J-1) matrix of observable utilities for the non-normalized alternatives
+    v_base = np.hstack([np.zeros((N, 1)), v]) # initialize v as (N,J) matrix of zeros 
 
     # Substract maximum for numerical stability
-    max_v = v.max(axis=1, keepdims=True) # keepdims: ensures (N,1) and not (N,) so that we can subtract (N,1) from (N,J) in the "natural" way
-    v = v - max_v # since max_v is (N,1) and v is (N,J), the subtraction works out 
+    max_v = v_base.max(axis=1, keepdims=True) # keepdims: ensures (N,1) and not (N,) so that we can subtract (N,1) from (N,J) in the "natural" way
+    v = v_base - max_v # since max_v is (N,1) and v is (N,J), the subtraction works out 
 
     return v
 
@@ -60,14 +62,14 @@ def choice_prob(theta, x):
     assert x.ndim == 2, f'x must be 2-dimensional'
     
     # FILL IN 
-    v = None # compute utility (fill out the util() function and use it)
-    denom = None # compute the denominator of the choice probability (make sure it is (N,1) and not (N,))
+    v = util(theta, x) # compute utility (fill out the util() function and use it)
+    denom = np.sum(np.exp(v), axis=1, keepdims=True) # compute the denominator of the choice probability (make sure it is (N,1) and not (N,))
     
     # Conditional choice probabilites
-    ccp = None # exp(v) / [sum exp(v)]
+    ccp = np.exp(v) / denom # exp(v) / [sum exp(v)]
 
     # log CCPs 
-    logsumexpv = None # log[sum(exp(v))]: make sure that it is (N,1) and not (N,)
+    logsumexpv = np.log(denom) # log[sum(exp(v))]: make sure that it is (N,1) and not (N,)
     logccp = v - logsumexpv # subtracting an (N,1) from an (N,J) matrix! 
 
     return ccp, logccp
@@ -96,17 +98,17 @@ def sim_data(theta, N: int):
     K, J_1 = theta.shape
     J = J_1 + 1
 
-    xx = None # draw (N,K-1) matrix of random normal covariates
+    xx = np.random.standard_normal((N, K-1)) # draw (N,K-1) matrix of random normal covariates
     oo = np.ones((N,1)) # constant term 
     x  = np.hstack([oo,xx]) # full x matrix 
 
     # FILL IN 
-    beta = None # should be a (K,J) matrix: first column = zeros, remainder = theta 
-    v = None # observable utility, (N,J): use a matrix product
-    e = None # use genextreme.ppf(uni, c=0) on an (N,J) matrix of random uniform draws
-    u = None # full utility 
+    beta = np.hstack([np.zeros((K, 1)), theta]) # should be a (K,J) matrix: first column = zeros, remainder = theta 
+    v = x @ beta  # observable utility, (N,J): use a matrix product
+    e = genextreme.ppf(np.random.uniform(size=(N, J)) , c=0)   # use genextreme.ppf(uni, c=0) on an (N,J) matrix of random uniform draws
+    u = v + e # full utility 
 
     # observed, chosen alternative
-    y = None # take the argmax row-wise (i.e. over j=0,...,J-1): verify that y is (N,) and not (N,1)
+    y = np.argmax(u, axis=1) # take the argmax row-wise (i.e. over j=0,...,J-1): verify that y is (N,) and not (N,1)
 
     return y,x
